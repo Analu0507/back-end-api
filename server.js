@@ -7,19 +7,29 @@ const port = 3000;                  // Define a porta
 dotenv.config();         // Carrega e processa o arquivo .env
 const { Pool } = pkg;    // Utiliza a Classe Pool do Postgres
 
-app.get("/", async (req, res) => {        // Cria endpoint na rota da raiz do projeto
-  console.log("Rota GET / solicitada");
-  const db = new Pool({  
-  connectionString: process.env.URL_BD,
-});
+let pool = null;
 
-let dbStatus = "ok";
 
-try {
-  await db.query("SELECT 1");
-} catch (e) {
-  dbStatus = e.message;
+function conectarBD(){
+  if(!pool) {
+    pool = new Pool({
+      connectionString: process.env.URL_BD,
+    })
+  }
+  return pool;
 }
+
+app.get("/", async (req, res) => {        // Cria endpoint na rota da raiz do projeto
+  const db = conectarBD();
+  console.log("Rota GET / solicitada");
+
+  let dbStatus = "ok";
+  try {
+    await db.query("SELECT 1")
+  } catch (e) {
+    dbStatus = e.message;
+  }
+
   res.json({
 		message: "API para ganha dinheiro",      // Substitua pelo conteúdo da sua API
     author: "Ana Luysa Rocha do Nascimento",    // Substitua pelo seu nome
@@ -27,6 +37,23 @@ try {
   });
 });
 
-app.listen(port, () => {            // Um socket para "escutar" as requisições
-  console.log(`Serviço rodando na porta:  ${port}`);
+app.get("/questoes", async (req, res) => {
+  const db = conectarBD();
+  console.log("Rota GET /questoes solicitadas");
+
+  try {
+    const resultado = await db.query("SELECT * FROM questoes");
+    const dados = resultado.rows;
+    res.json(dados);
+  } catch (e) {
+    console.error("Erro ao buscar questões:" e);
+    res.status(500).json({
+      erro: "Erro interno do servidor",
+      mensagem: "Não foi possível buscar as questões",
+    });
+  }
+});
+
+app.listen(port, () => {
+  console.log('Serviço rodando na porta: ${port}');
 });
