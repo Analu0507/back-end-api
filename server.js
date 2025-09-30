@@ -45,7 +45,7 @@ app.get("/questoes", async (req, res) => {
     const dados = resultado.rows;
     res.json(dados);
   } catch (e) {
-    console.error("Erro ao buscar questões:" e);
+    console.error("Erro ao buscar questões:", e);
     res.status(500).json({
       erro: "Erro interno do servidor",
       mensagem: "Não foi possível buscar as questões",
