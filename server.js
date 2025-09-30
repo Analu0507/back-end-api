@@ -1,11 +1,10 @@
-import express from "express";      // Requisição do pacote do express
 import pkg from "pg";
 import dotenv from "dotenv";
-
-const app = express();              // Instancia o Express
-const port = 3000;                  // Define a porta
 dotenv.config();         // Carrega e processa o arquivo .env
 const { Pool } = pkg;    // Utiliza a Classe Pool do Postgres
+import express from "express";      // Requisição do pacote do express
+const app = express();              // Instancia o Express
+const port = 3000;                  // Define a porta
 
 let pool = null;
 
