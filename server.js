@@ -1,3 +1,4 @@
+// server.js
 import pkg from "pg";
 import dotenv from "dotenv";
 dotenv.config();         // Carrega e processa o arquivo .env
@@ -8,8 +9,8 @@ const port = 3000;                  // Define a porta
 
 let pool = null;
 
-
-function conectarBD(){
+// Função para obter uma conexão com o banco de dados
+function conectarBD() {
   if(!pool) {
     pool = new Pool({
       connectionString: process.env.URL_BD,
@@ -32,7 +33,7 @@ app.get("/", async (req, res) => {        // Cria endpoint na rota da raiz do pr
   res.json({
 		message: "API para ganha dinheiro",      // Substitua pelo conteúdo da sua API
     author: "Ana Luysa Rocha do Nascimento",    // Substitua pelo seu nome
-    statusBD: dbStatus
+    statusBD: dbStatus,
   });
 });
 
