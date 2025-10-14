@@ -1,31 +1,26 @@
-// ######
-// Local onde os pacotes de dependências serão importados
-// ######
 import express from "express";      // Requisição do pacote do express
 import pkg from "pg";
 import dotenv from "dotenv";
-// ######
-// Local onde as configurações do servidor serão feitas
-// ######
+
+dotenv.config();         // Carrega e processa o arquivo .env
 const app = express();              // Instancia o Express
 const port = 3000;                  // Define a porta
 
-dotenv.config();         // Carrega e processa o arquivo .env
-const { Pool } = pkg;    // Utiliza a Classe Pool do Postgres
-// ######
-// Local onde as rotas (endpoints) serão definidas
-// ######
-app.get("/", async (req, res) => {        
-  // Rota raiz do servidor
-  // Rota GET /
-  // Esta rota é chamada quando o usuário acessa a raiz do servidor
-  // Ela retorna uma mensagem com informações do projeto
+let pool = null;
 
+
+function conectarBD() {
+  if (!pool) {
+    pool = new Pool({
+      connectionString: process.env.URL_BD,
+    });
+  }
+  return pool;
+}
+
+app.get("/", async (req, res) => {        
+  const db = conectarBD();
   console.log("Rota GET / solicitada"); // Log no terminal para indicar que a rota foi acessada
-  
-    const db = new Pool({  
-  connectionString: process.env.URL_BD,
-});
 
 let dbStatus = "ok";
 try {
@@ -34,7 +29,6 @@ try {
   dbStatus = e.message;
 }
 
-  // Responde com um JSON contendo uma mensagem
   res.json({
 		descricao: "API para gatos",    // Substitua pelo conteúdo da sua API
     author: "Ana Luysa Rocha do Nascimento",     // Substitua pelo seu nome
@@ -42,26 +36,10 @@ try {
   });
 });
 
-// ######
-// Local onde o servidor escutar as requisições que chegam
-// ######
-app.listen(port, () => {
-  console.log(`Serviço rodando na porta:  ${port}`);
-});
-
-//server.js
 app.get("/questoes", async (req, res) => {
-	console.log("Rota GET /questoes solicitada"); // Log no terminal para indicar que a rota foi acessada
+	const db = conectarBD();
+  console.log("Rota GET /questoes solicitada"); // Log no terminal para indicar que a rota foi acessada
 	
-  //server.js
-const { Pool } = pkg; // Obtém o construtor Pool do pacote pg para gerenciar conexões com o banco de dados PostgreSQL
-
-const db = new Pool({
-  // Cria uma nova instância do Pool para gerenciar conexões com o banco de dados
-  connectionString: process.env.URL_BD, // Usa a variável de ambiente do arquivo .env DATABASE_URL para a string de conexão
-});
-
-//server.js
 try {
     const resultado = await db.query("SELECT * FROM questoes"); // Executa uma consulta SQL para selecionar todas as questões
     const dados = resultado.rows; // Obtém as linhas retornadas pela consulta
@@ -73,4 +51,8 @@ try {
       mensagem: "Não foi possível buscar as questões",
     });
   }
+});
+
+app.listen(port, () => {
+  console.log(`Serviço rodando na porta:  ${port}`);
 });
