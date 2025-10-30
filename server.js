@@ -22,29 +22,29 @@ function conectarBD() {
 //server.js - configuração do servidor
 app.use(express.json()); // Middleware para interpretar requisições com corpo em JSON
 
-app.get("/", async (req, res) => {        
+app.get("/", async (req, res) => {
   const db = conectarBD();
   console.log("Rota GET / solicitada"); // Log no terminal para indicar que a rota foi acessada
 
-let dbStatus = "ok";
-try {
-  await db.query("SELECT 1");
-} catch (e) {
-  dbStatus = e.message;
-}
+  let dbStatus = "ok";
+  try {
+    await db.query("SELECT 1");
+  } catch (e) {
+    dbStatus = e.message;
+  }
 
   res.json({
-		descricao: "API para gatos",    // Substitua pelo conteúdo da sua API
+    descricao: "API para gatos",    // Substitua pelo conteúdo da sua API
     author: "Ana Luysa Rocha do Nascimento",     // Substitua pelo seu nome
     statusBD: dbStatus
   });
 });
 
 app.get("/questoes", async (req, res) => {
-	const db = conectarBD();
+  const db = conectarBD();
   console.log("Rota GET /questoes solicitada"); // Log no terminal para indicar que a rota foi acessada
-	
-try {
+
+  try {
     const resultado = await db.query("SELECT * FROM questoes"); // Executa uma consulta SQL para selecionar todas as questões
     const dados = resultado.rows; // Obtém as linhas retornadas pela consulta
     res.json(dados); // Retorna o resultado da consulta como JSON
@@ -164,7 +164,7 @@ app.put("/questoes/:id", async (req, res) => {
     data.nivel = data.nivel || questao[0].nivel;
 
     // Atualiza a questão
-    consulta ="UPDATE questoes SET enunciado = $1, disciplina = $2, tema = $3, nivel = $4 WHERE id = $5";
+    consulta = "UPDATE questoes SET enunciado = $1, disciplina = $2, tema = $3, nivel = $4 WHERE id = $5";
     // Executa a consulta SQL com os valores fornecidos
     resultado = await db.query(consulta, [
       data.enunciado,
@@ -180,6 +180,110 @@ app.put("/questoes/:id", async (req, res) => {
     res.status(500).json({
       erro: "Erro interno do servidor",
     });
+  }
+});
+
+app.post("/usuarios", async (req, res) => {
+  console.log("Rota POST /usuarios solicitada");
+
+  try {
+    const { nome, email, senha } = req.body;
+
+    if (!nome || !email || !senha) {
+      return res.status(400).json({
+        erro: "Todos os campos (nome, email, senha) são obrigatórios.",
+      });
+    }
+
+    const db = conectarBD();
+    const consulta = "INSERT INTO usuarios (nome, email, senha) VALUES ($1, $2, $3)";
+    await db.query(consulta, [nome, email, senha]);
+
+    res.status(201).json({ mensagem: "Usuário criado com sucesso!" });
+  } catch (e) {
+    console.error("Erro ao criar usuário:", e);
+    res.status(500).json({ erro: "Erro interno ao criar usuário" });
+  }
+});
+
+app.get("/usuarios", async (req, res) => {
+  console.log("Rota GET /usuarios solicitada");
+
+  try {
+    const db = conectarBD();
+    const resultado = await db.query("SELECT * FROM usuarios");
+    res.json(resultado.rows);
+  } catch (e) {
+    console.error("Erro ao buscar usuários:", e);
+    res.status(500).json({ erro: "Erro interno ao buscar usuários" });
+  }
+});
+
+app.get("/usuarios/:id", async (req, res) => {
+  console.log("Rota GET /usuarios/:id solicitada");
+
+  try {
+    const { id } = req.params;
+    const db = conectarBD();
+    const resultado = await db.query("SELECT * FROM usuarios WHERE id = $1", [id]);
+
+    if (resultado.rows.length === 0) {
+      return res.status(404).json({ mensagem: "Usuário não encontrado" });
+    }
+
+    res.json(resultado.rows[0]);
+  } catch (e) {
+    console.error("Erro ao buscar usuário:", e);
+    res.status(500).json({ erro: "Erro interno ao buscar usuário" });
+  }
+});
+
+app.put("/usuarios/:id", async (req, res) => {
+  console.log("Rota PUT /usuarios/:id solicitada");
+
+  try {
+    const { id } = req.params;
+    const db = conectarBD();
+
+    // Buscar o usuário atual
+    const busca = await db.query("SELECT * FROM usuarios WHERE id = $1", [id]);
+    if (busca.rows.length === 0) {
+      return res.status(404).json({ mensagem: "Usuário não encontrado" });
+    }
+
+    const atual = busca.rows[0];
+    const { nome, email, senha } = req.body;
+
+    const atualizado = await db.query(
+      "UPDATE usuarios SET nome = $1, email = $2, senha = $3 WHERE id = $4",
+      [nome || atual.nome, email || atual.email, senha || atual.senha, id]
+    );
+
+    res.json({ mensagem: "Usuário atualizado com sucesso!" });
+  } catch (e) {
+    console.error("Erro ao atualizar usuário:", e);
+    res.status(500).json({ erro: "Erro interno ao atualizar usuário" });
+  }
+});
+
+app.delete("/usuarios/:id", async (req, res) => {
+  console.log("Rota DELETE /usuarios/:id solicitada");
+
+  try {
+    const { id } = req.params;
+    const db = conectarBD();
+
+    // Verificar se o usuário existe
+    const verifica = await db.query("SELECT * FROM usuarios WHERE id = $1", [id]);
+    if (verifica.rows.length === 0) {
+      return res.status(404).json({ mensagem: "Usuário não encontrado" });
+    }
+
+    await db.query("DELETE FROM usuarios WHERE id = $1", [id]);
+    res.json({ mensagem: "Usuário deletado com sucesso!" });
+  } catch (e) {
+    console.error("Erro ao deletar usuário:", e);
+    res.status(500).json({ erro: "Erro interno ao deletar usuário" });
   }
 });
 
