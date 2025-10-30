@@ -1,18 +1,18 @@
 meta {
-  name: getPUTQuestoes
+  name: getQuestoesPUT
   type: http
   seq: 5
 }
 
 put {
-  url: https://special-yodel-7vgqpxxxq5p24jp-3000.app.github.dev/questoes/5
+  url: https://back-end-api-fawn.vercel.app/questoes/3
   body: json
   auth: inherit
 }
 
 body:json {
   {
-    "enunciado": "Qual é a capital da Bélgica?",
+    "enunciado": "Qual é a capital da Alemanha?",
     "disciplina": "Geografia",
     "tema": "Capitais do mundo",
     "nivel": 3

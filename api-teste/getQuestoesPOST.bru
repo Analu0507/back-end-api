@@ -1,0 +1,20 @@
+meta {
+  name: getQuestoesPOST
+  type: http
+  seq: 4
+}
+
+post {
+  url: https://back-end-api-fawn.vercel.app/questoes
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "enunciado": "Qual é a capital da Argentina?",
+    "disciplina": "Geografia",
+    "tema": "Capitais do mundo",
+    "nivel": 3
+  }
+}

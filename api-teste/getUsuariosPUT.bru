@@ -1,0 +1,20 @@
+meta {
+  name: getUsuariosPUT
+  type: http
+  seq: 9
+}
+
+put {
+  url: https://back-end-api-fawn.vercel.app/usuarios/3
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "nome": "João Silva",
+    "email": "joao.silva@example.com",
+    "senha": "senha123",
+    "criado_em": "2025-10-28T18:56:06.323Z"
+  }
+}
