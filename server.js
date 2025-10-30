@@ -19,6 +19,9 @@ function conectarBD() {
   return pool;
 }
 
+//server.js - configuração do servidor
+app.use(express.json()); // Middleware para interpretar requisições com corpo em JSON
+
 app.get("/", async (req, res) => {        
   const db = conectarBD();
   console.log("Rota GET / solicitada"); // Log no terminal para indicar que a rota foi acessada
@@ -100,6 +103,36 @@ app.delete("/questoes/:id", async (req, res) => {
     res.status(200).json({ mensagem: "Questão excluida com sucesso!!" }); // Retorna o resultado da consulta como JSON
   } catch (e) {
     console.error("Erro ao excluir questão:", e); // Log do erro no servidor
+    res.status(500).json({
+      erro: "Erro interno do servidor"
+    });
+  }
+});
+
+//server.js
+app.post("/questoes", async (req, res) => {
+  console.log("Rota POST /questoes solicitada"); // Log no terminal para indicar que a rota foi acessada
+
+  try {
+    const data = req.body; // Obtém os dados do corpo da requisição
+    // Validação dos dados recebidos
+    if (!data.enunciado || !data.disciplina || !data.tema || !data.nivel) {
+      return res.status(400).json({
+        erro: "Dados inválidos",
+        mensagem:
+          "Todos os campos (enunciado, disciplina, tema, nivel) são obrigatórios.",
+      });
+    }
+
+    const db = conectarBD(); // Conecta ao banco de dados
+
+    const consulta =
+      "INSERT INTO questoes (enunciado,disciplina,tema,nivel) VALUES ($1,$2,$3,$4) "; // Consulta SQL para inserir a questão
+    const questao = [data.enunciado, data.disciplina, data.tema, data.nivel]; // Array com os valores a serem inseridos
+    const resultado = await db.query(consulta, questao); // Executa a consulta SQL com os valores fornecidos
+    res.status(201).json({ mensagem: "Questão criada com sucesso!" }); // Retorna o resultado da consulta como JSON
+  } catch (e) {
+    console.error("Erro ao inserir questão:", e); // Log do erro no servidor
     res.status(500).json({
       erro: "Erro interno do servidor"
     });
